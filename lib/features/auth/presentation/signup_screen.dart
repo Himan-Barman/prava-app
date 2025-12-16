@@ -4,48 +4,58 @@ import 'package:go_router/go_router.dart';
 import 'auth_controller.dart';
 import '../../../core/theme/app_colors.dart';
 
-class LoginScreen extends ConsumerStatefulWidget {
-  const LoginScreen({super.key});
+class SignupScreen extends ConsumerStatefulWidget {
+  const SignupScreen({super.key});
 
   @override
-  ConsumerState<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<SignupScreen> createState() => _SignupScreenState();
 }
 
-class _LoginScreenState extends ConsumerState<LoginScreen> {
+class _SignupScreenState extends ConsumerState<SignupScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
+  final _usernameController = TextEditingController();
+  final _displayNameController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
+  bool _usernameAvailable = true;
 
   @override
   void dispose() {
     _emailController.dispose();
+    _usernameController.dispose();
+    _displayNameController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
 
-  Future<void> _login() async {
-    if (_formKey.currentState!.validate()) {
-      await ref.read(authControllerProvider.notifier).login(
+  Future<void> _checkUsername(String username) async {
+    if (username.length >= 3) {
+      final available = await ref.read(authControllerProvider.notifier).checkUsernameAvailability(username);
+      setState(() {
+        _usernameAvailable = available;
+      });
+    }
+  }
+
+  Future<void> _signup() async {
+    if (_formKey.currentState!.validate() && _usernameAvailable) {
+      await ref.read(authControllerProvider.notifier).register(
             email: _emailController.text.trim(),
+            username: _usernameController.text.trim(),
             password: _passwordController.text,
+            displayName: _displayNameController.text.trim().isEmpty ? null : _displayNameController.text.trim(),
           );
 
       final authState = ref.read(authControllerProvider);
       authState.whenOrNull(
         data: (user) {
-          if (user != null) {
-            context.go('/feed');
-          }
+          context.go('/auth/verify?email=${_emailController.text.trim()}');
         },
         error: (error, stack) {
-          if (error.toString().contains('not verified')) {
-            context.go('/auth/verify?email=${_emailController.text.trim()}');
-          } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(error.toString())),
-            );
-          }
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(error.toString())),
+          );
         },
       );
     }
@@ -56,6 +66,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final authState = ref.watch(authControllerProvider);
 
     return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => context.go('/auth/login'),
+        ),
+      ),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -67,7 +83,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Text(
-                    'Welcome to Prava',
+                    'Create Account',
                     style: Theme.of(context).textTheme.headlineLarge?.copyWith(
                           fontWeight: FontWeight.bold,
                           color: AppColors.blue,
@@ -76,13 +92,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Login to continue',
+                    'Join Prava today',
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                           color: AppColors.gray600,
                         ),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 48),
+                  const SizedBox(height: 32),
                   TextFormField(
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
@@ -102,6 +118,41 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ),
                   const SizedBox(height: 16),
                   TextFormField(
+                    controller: _usernameController,
+                    decoration: InputDecoration(
+                      labelText: 'Username',
+                      prefixIcon: const Icon(Icons.person),
+                      suffixIcon: _usernameController.text.length >= 3
+                          ? Icon(
+                              _usernameAvailable ? Icons.check_circle : Icons.error,
+                              color: _usernameAvailable ? AppColors.success : AppColors.error,
+                            )
+                          : null,
+                    ),
+                    onChanged: _checkUsername,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter a username';
+                      }
+                      if (value.length < 3) {
+                        return 'Username must be at least 3 characters';
+                      }
+                      if (!_usernameAvailable) {
+                        return 'Username is already taken';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _displayNameController,
+                    decoration: const InputDecoration(
+                      labelText: 'Display Name (optional)',
+                      prefixIcon: Icon(Icons.badge),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
                     controller: _passwordController,
                     obscureText: _obscurePassword,
                     decoration: InputDecoration(
@@ -113,21 +164,24 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         ),
                         onPressed: () {
                           setState(() {
-                            _obscurePassword = !_obscurePassword;
+                            _obscurePassword = !_obscurePassword,
                           });
                         },
                       ),
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please enter your password';
+                        return 'Please enter a password';
+                      }
+                      if (value.length < 8) {
+                        return 'Password must be at least 8 characters';
                       }
                       return null;
                     },
                   ),
                   const SizedBox(height: 32),
                   ElevatedButton(
-                    onPressed: authState.isLoading ? null : _login,
+                    onPressed: authState.isLoading ? null : _signup,
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
                     ),
@@ -137,14 +191,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             width: 20,
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
-                        : const Text('Login'),
+                        : const Text('Sign Up'),
                   ),
                   const SizedBox(height: 16),
                   TextButton(
                     onPressed: () {
-                      context.go('/auth/signup');
+                      context.go('/auth/login');
                     },
-                    child: const Text('Don\'t have an account? Sign up'),
+                    child: const Text('Already have an account? Login'),
                   ),
                 ],
               ),
