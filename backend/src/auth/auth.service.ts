@@ -177,7 +177,11 @@ export class AuthService {
     });
 
     // TODO: Send email with OTP (integrate with email service)
-    console.log(`OTP for ${email}: ${code}`);
+    // WARNING: For development only - remove in production!
+    // Replace with proper email service (e.g., SendGrid, AWS SES)
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`[DEV ONLY] OTP for ${email}: ${code}`);
+    }
 
     return code;
   }

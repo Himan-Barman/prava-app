@@ -21,14 +21,17 @@ class WebSocketClient {
     );
 
     _socket?.onConnect((_) {
+      // TODO: Replace with proper logging package (e.g., logger)
       print('WebSocket connected');
     });
 
     _socket?.onDisconnect((_) {
+      // TODO: Replace with proper logging package
       print('WebSocket disconnected');
     });
 
     _socket?.onConnectError((error) {
+      // TODO: Replace with proper logging package
       print('WebSocket connection error: $error');
     });
   }

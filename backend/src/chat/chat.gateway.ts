@@ -46,6 +46,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
       console.log(`Client connected: ${client.id}, User: ${userId}`);
     } catch (error) {
+      // TODO: Replace with proper logging service
       console.error('Connection error:', error);
       client.disconnect();
     }
@@ -62,6 +63,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         }
       }
     }
+    // TODO: Replace with proper logging service
     console.log(`Client disconnected: ${client.id}`);
   }
 

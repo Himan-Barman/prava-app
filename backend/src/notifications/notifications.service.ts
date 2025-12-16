@@ -80,6 +80,7 @@ export class NotificationsService {
     });
 
     // TODO: Send push notification to user's devices
+    // TODO: Replace with proper logging service
     console.log(`Notification created: ${notification.id}`);
 
     return notification;
