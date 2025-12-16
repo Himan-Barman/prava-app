@@ -25,8 +25,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   async handleConnection(client: Socket) {
     try {
-      const token = client.handshake.auth.token || client.handshake.headers.authorization?.split(' ')[1];
-      
+      const token =
+        client.handshake.auth.token || client.handshake.headers.authorization?.split(' ')[1];
+
       if (!token) {
         client.disconnect();
         return;
@@ -42,7 +43,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
       client.data.userId = userId;
       client.join(`user:${userId}`);
-      
+
       console.log(`Client connected: ${client.id}, User: ${userId}`);
     } catch (error) {
       console.error('Connection error:', error);

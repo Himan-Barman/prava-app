@@ -48,7 +48,7 @@ export class NotificationsService {
   }
 
   async markAsRead(userId: string, notificationId: string) {
-    const notification = await this.prisma.notification.updateMany({
+    await this.prisma.notification.updateMany({
       where: {
         id: notificationId,
         userId,
@@ -80,6 +80,8 @@ export class NotificationsService {
     });
 
     // TODO: Send push notification to user's devices
+    console.log(`Notification created: ${notification.id}`);
+
     return notification;
   }
 }

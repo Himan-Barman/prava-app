@@ -30,7 +30,7 @@ export class FeedService {
 
   async getFeed(page = 1, limit = 20) {
     const skip = (page - 1) * limit;
-    
+
     const posts = await this.prisma.post.findMany({
       skip,
       take: limit,

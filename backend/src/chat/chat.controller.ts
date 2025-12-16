@@ -59,7 +59,10 @@ export class ChatController {
 
   @Delete('conversations/:conversationId')
   @ApiOperation({ summary: 'Delete conversation' })
-  async deleteConversation(@CurrentUser() user: any, @Param('conversationId') conversationId: string) {
+  async deleteConversation(
+    @CurrentUser() user: any,
+    @Param('conversationId') conversationId: string,
+  ) {
     return this.chatService.deleteConversation(user.id, conversationId);
   }
 }

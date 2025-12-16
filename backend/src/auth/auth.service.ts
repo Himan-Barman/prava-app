@@ -1,4 +1,9 @@
-import { Injectable, UnauthorizedException, ConflictException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  ConflictException,
+  BadRequestException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma.service';
@@ -122,7 +127,7 @@ export class AuthService {
 
   private async generateTokens(user: any) {
     const payload = { sub: user.id, email: user.email, username: user.username };
-    
+
     const accessToken = this.jwtService.sign(payload);
     const refreshToken = this.jwtService.sign(payload, {
       secret: process.env.REFRESH_TOKEN_SECRET || 'refresh-secret',
@@ -156,7 +161,7 @@ export class AuthService {
   private async generateAndSendOtp(email: string, userId: string, purpose: string) {
     // Generate 6-digit OTP
     const code = Math.floor(100000 + Math.random() * 900000).toString();
-    
+
     const expiresAt = new Date();
     const expiresInMinutes = parseInt(process.env.OTP_EXPIRES_IN_MINUTES || '10', 10);
     expiresAt.setMinutes(expiresAt.getMinutes() + expiresInMinutes);
@@ -173,7 +178,7 @@ export class AuthService {
 
     // TODO: Send email with OTP (integrate with email service)
     console.log(`OTP for ${email}: ${code}`);
-    
+
     return code;
   }
 

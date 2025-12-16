@@ -12,10 +12,7 @@ export class ChatService {
         name: dto.name,
         isGroup: dto.participantIds.length > 1,
         participants: {
-          create: [
-            { userId },
-            ...dto.participantIds.map((id) => ({ userId: id })),
-          ],
+          create: [{ userId }, ...dto.participantIds.map((id) => ({ userId: id }))],
         },
       },
       include: {
@@ -162,7 +159,7 @@ export class ChatService {
     const conversation = await this.getConversation(userId, conversationId);
 
     const participant = conversation.participants.find((p) => p.userId === userId);
-    
+
     if (!participant) {
       throw new ForbiddenException('Not a participant');
     }
